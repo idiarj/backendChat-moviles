@@ -6,7 +6,7 @@ import { changePasswordMiddleware } from "../middlewares/changePasswordMiddlewar
 
 export const userRouter = Router();
 
-userRouter.post('/register',  UserController.registerUser);
+userRouter.post('/register', UserController.registerUser);
 userRouter.post('/login', UserController.loginUser);
 userRouter.post('/logout', authMiddleware, UserController.logoutUser);
 userRouter.post('/likeUser', authMiddleware, UserController.likeUser);

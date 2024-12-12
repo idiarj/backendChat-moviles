@@ -4,7 +4,7 @@ import { userSchema } from '../models/Schemas/userSchemas.js';
 import { ChatSchema } from "../models/Schemas/ChatSchema.js";
 import { ChatModel } from '../models/ChatModel.js';
 import { jwtToken } from '../utils/tokens.js';
-import { Chat } from '../database/Schemas/Chats.js';
+
 
 
 const validateMessage = new Validation(ChatSchema);
@@ -12,12 +12,13 @@ const validateUser = new Validation(userSchema);
 
 export class UserController {
 
+
     static async registerUser(req, res) {
         try {
 
             await validateUser.validatePartial(req.body);
 
-            const { username, password, email, firstName, lastName, birthDate, description, gender, interestedIn } = req.body;
+            const { username, password, email, firstName, lastName, birthDate, description, gender, interestedIn, imageUrl } = req.body;
 
             const verifiedUser = await UserModel.verifyUser({ username });
             const userAlreadyExists = verifiedUser.isUserValid;
@@ -26,8 +27,6 @@ export class UserController {
             const emailAlreadyInUse = await UserModel.verifyEmail({ email: req.body.email });
 
             if (emailAlreadyInUse) return res.status(400).json({ success: false, error: "El correo ya esta en uso." });
-
-            
 
 
             console.log({
@@ -39,7 +38,8 @@ export class UserController {
                 birthDate,
                 description,
                 gender,
-                interestedIn
+                interestedIn,
+                imageUrl
             })
             const user = await UserModel.registerUser({
                 username,
@@ -50,7 +50,8 @@ export class UserController {
                 birthDate,
                 description,
                 gender,
-                interestedIn
+                interestedIn,
+                profilePicture: imageUrl
             });
 
             res.status(200).json({
@@ -325,12 +326,14 @@ export class UserController {
     static async getMatches(req, res){
         try {
             const {id} = req.user;
-            const matches = await UserModel.getMatches({userId: id});
+            console.log(id)
+            const matches = await UserModel.getMatches({id_user: id});
             res.status(200).json({
                 success: true,
                 data: matches
             })
         } catch (error) {
+            console.log(error)
             res.status(400).json({success: false, error: error.message})
         }
     }   
@@ -346,6 +349,7 @@ export class UserController {
                 data: chats
             })
         } catch (error) {
+            console.log(error)
             res.status(400).json({success: false, error: error.message})
         }
     }

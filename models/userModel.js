@@ -2,6 +2,7 @@ import { User } from "../database/Schemas/userSchemaMongo.js";
 import { CryptManager } from "../utils/CryptManager.js";
 export class UserModel {
 
+
     static async registerUser({ username, password, email, firstName, lastName, gender, birthDate, description, profilePicture, interestedIn }) {
         try {
             password = await CryptManager.encriptarData({data: password});
@@ -14,7 +15,8 @@ export class UserModel {
                 birthDate,
                 description,
                 gender,
-                interestedIn
+                interestedIn,
+                profilePicture
             })
             const user = await User.create({
                 username,
@@ -25,7 +27,8 @@ export class UserModel {
                 gender,
                 birthDate,
                 description,
-                interestedIn
+                interestedIn,
+                profilePicture
             });
             return user;
         } catch (error) {
@@ -283,6 +286,21 @@ export class UserModel {
 
         } catch (error) {
             console.error('Error al notificar el match:', error);
+            throw error;
+        }
+    }
+
+    static async getMatches({id_user}){
+        try {
+            console.log(id_user)
+            const {Matches} = await User.findById(id_user).select('Matches').populate({
+                path:'Matches',
+                select: '-password -securityData -Matches'
+            })
+            // console.log(user)
+            console.log(Matches)
+            return Matches;
+        } catch (error) {
             throw error;
         }
     }
