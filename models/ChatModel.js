@@ -15,12 +15,12 @@ export class ChatModel {
             const chats = await Chat.find({$or: [{id_user1: id_user}, {id_user2: id_user}]})
             .populate({
                 path: 'id_user1',
-                select: '_id username firstName lastName',
+                select: '_id username firstName lastName profilePicture',
                 match: { _id: { $ne: id_user } } // Excluir el usuario actual
             })
             .populate({
                 path: 'id_user2',
-                select: '_id username firstName lastName',
+                select: '_id username firstName lastName profilePicture',
                 match: { _id: { $ne: id_user } } // Excluir el usuario actual
             });
 

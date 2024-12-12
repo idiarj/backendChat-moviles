@@ -304,4 +304,15 @@ export class UserModel {
             throw error;
         }
     }
+
+    static async editProfilePicture({userId, newProfilePicture}){
+        try {
+            const user = await User.findById(userId);
+            user.profilePicture = newProfilePicture;
+            await user.save();
+            return {success: true, mensaje: 'Foto de perfil editada con exito.'}
+        } catch (error) {
+            throw error;
+        }
+    }
 }

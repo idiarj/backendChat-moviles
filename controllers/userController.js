@@ -353,4 +353,17 @@ export class UserController {
             res.status(400).json({success: false, error: error.message})
         }
     }
+
+    static async patchProfilePicture(req, res){
+        try {
+            const {newPictureURL} = req.body;
+            const {id} = req.user;
+            const data = await UserModel.editProfilePicture({newProfilePicture: newPictureURL, userId: id});
+            res.status(200).json({
+                ...data
+            })
+        } catch (error) {
+            res.status(400).json({success: false, error: error.message}) 
+        }
+    }
 }
