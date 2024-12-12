@@ -1,4 +1,5 @@
-import {Schema} from 'mongoose';
+import { Schema } from 'mongoose';
+import { connectionToMongo } from '../connection.js';
 
 const userSchema = new Schema({
     fullName: {
@@ -44,3 +45,5 @@ const userSchema = new Schema({
         }
     }
 })
+
+export const User = connectionToMongo.model('User', userSchema);

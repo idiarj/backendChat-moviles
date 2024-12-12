@@ -1,28 +1,20 @@
-import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { UserModel } from '../models/userModel.js';
-import { validateUser } from '../../instances/validation/iValidation.js';
-// Obtener __dirname en módulos ES
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { Validation } from '../utils/validation.js';
+import { userSchema } from '../models/Schemas/userSchemas.js';
 
-// Lee el archivo JSON y parsea su contenido
-const jwtConfigPath = path.resolve(__dirname, '../../config/jwt-config.json');
-const jwtConfig = JSON.parse(fs.readFileSync(jwtConfigPath, 'utf-8'));
+const validateUser = new Validation(userSchema);
 
 export class UserController {
 
     static async registerUser(req, res) {
         try {
-            console.log('lo que me esta lleando en el body:', req.body);
+            
             const verifiedUser = await UserModel.verifyUser({ username: req.body.username });
             const userAlreadyExists = verifiedUser.isUserValid;
-            console.log('a', userAlreadyExists);
+
             if (userAlreadyExists) return res.status(400).json({ success: false, error: "El nombre de usuario ya existe." });
             const emailAlreadyInUse = await UserModel.verifyEmail({ email: req.body.email });
-            console.log('b', emailAlreadyInUse);
+
             if (emailAlreadyInUse) return res.status(400).json({ success: false, error: "El correo ya esta en uso." });
 
             const { username, password, email } = req.body;
@@ -34,7 +26,7 @@ export class UserController {
                 password,
                 email
             });
-            console.log('lo que ingresare en la bd:', user);
+
             res.status(200).json({
                 success: true,
                 message: "User registered successfully",

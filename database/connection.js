@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const createConnectionToMongo = async (uri) => {
-    try {
-        console.log('uri',uri);  
+    try { 
         return mongoose.createConnection(uri);
     } catch (error) {
         console.log(error);

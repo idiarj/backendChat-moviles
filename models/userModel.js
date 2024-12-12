@@ -1,6 +1,5 @@
-import { User } from "../utils/db/User.js";
-import { CryptManager } from "../security/encrypting/Crypt.js";
-import { Film } from "../utils/db/FIlm.js";
+import { User } from "../database/Schemas/userSchemaMongo.js";
+import { CryptManager } from "../utils/CryptManager.js";
 export class UserModel {
 
     static async registerUser({ username, password, email }) {

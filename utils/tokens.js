@@ -1,11 +1,19 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-export class Token {
-  static generateToken({payload, expiresIn}) {
-    return jwt.sign(payload, process.env.SECRET_KEY, { expiresIn });
+dotenv.config();
+class Token {
+  constructor(secret_key){
+    this.secret_key = secret_key;
   }
 
-  static verifyToken(token) {
+  generateToken({payload, expiresIn}) {
+    return jwt.sign(payload, this.secret_key, { expiresIn });
+  }
+
+  verifyToken({token}) {
     return jwt.verify(token, process.env.SECRET_KEY);
   }
 }
+
+export const jwtToken = new Token(process.env.SECRET_KEY);
