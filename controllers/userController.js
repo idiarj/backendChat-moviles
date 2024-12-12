@@ -1,15 +1,23 @@
 import { UserModel } from '../models/userModel.js';
 import { Validation } from '../utils/validation.js';
 import { userSchema } from '../models/Schemas/userSchemas.js';
+import { ChatSchema } from "./Schemas/ChatSchema.js";
+import { jwtToken } from '../utils/tokens.js';
 
+
+const validateMessage = Validation(ChatSchema);
 const validateUser = new Validation(userSchema);
 
 export class UserController {
 
     static async registerUser(req, res) {
         try {
-            
-            const verifiedUser = await UserModel.verifyUser({ username: req.body.username });
+
+            await validateUser.validatePartial(req.body);
+
+            const { username, password, email, firstName, lastName, birthDate, description, gender, interestedIn } = req.body;
+
+            const verifiedUser = await UserModel.verifyUser({ username });
             const userAlreadyExists = verifiedUser.isUserValid;
 
             if (userAlreadyExists) return res.status(400).json({ success: false, error: "El nombre de usuario ya existe." });
@@ -17,14 +25,30 @@ export class UserController {
 
             if (emailAlreadyInUse) return res.status(400).json({ success: false, error: "El correo ya esta en uso." });
 
-            const { username, password, email } = req.body;
+            
 
-            await validateUser.validateTotal(req.body);
 
+            console.log({
+                username,
+                password,
+                email,
+                firstName,
+                lastName,
+                birthDate,
+                description,
+                gender,
+                interestedIn
+            })
             const user = await UserModel.registerUser({
                 username,
                 password,
-                email
+                email,
+                firstName,
+                lastName,
+                birthDate,
+                description,
+                gender,
+                interestedIn
             });
 
             res.status(200).json({
@@ -43,7 +67,7 @@ export class UserController {
             const alreadyInUseToken = req.cookies.access_token;
             console.log('token', alreadyInUseToken);
             if (alreadyInUseToken) {
-                res.clearCookie('access_token'); // Elimina la cookie del token
+                res.clearCookie('access_token');
                 return res.status(400).json({ success: false, message: "Ya hay una sesion iniciada.", error: "Hubo un error, por favor intenta de nuevo." });
             }
             await validateUser.validatePartial(req.body)
@@ -59,7 +83,7 @@ export class UserController {
             }
 
             console.log(user._id, user.username);
-            const token = jwt.sign({ id: user._id, username: user.username }, jwtConfig.secret, jwtConfig.options);
+            const token = jwtToken.generateToken({ payload: { id: user._id, username: user.username, interestedIn: user.interestedIn }, expiresIn: '1h' });
             console.log(token)
             res.cookie('access_token', token);
             res.status(200).json({ success: true, message: `Inicio de sesion con el usuario ${user.username} exitoso.` });
@@ -140,7 +164,7 @@ export class UserController {
             if (!answerIsValid) {
                 return res.status(400).json({ success: false, message: "La respuesta de seguridad es incorrecta." });
             }
-            const validToken = jwt.sign({ answerIsValid }, jwtConfig.secret, { expiresIn: '5m' });
+            const validToken = jwtToken.generateToken({ payload: { answerIsValid }, expiresIn: '5m' });
             res.cookie('validityToken', validToken);
             res.status(200).json({success: true, message: 'Respuesta de seguridad correcta.'});
         } catch (error) {
@@ -174,13 +198,7 @@ export class UserController {
     static async patchPassword(req, res){
         try {
             console.log('holi')
-            // const alreadyInUseToken = req.cookies.validityToken;
-            // console.log(req.cookies)
-            // console.log('token', alreadyInUseToken);
-            // if (alreadyInUseToken) {
-            //     res.clearCookie('validityToken'); // Elimina la cookie del token
-            //     return res.status(400).json({ success: false, message: "Ya hay una sesion iniciada.", error: "Hubo un error, por favor intenta de nuevo." });
-            // }
+
             const {validity} = req
             if(!validity) return res.status(400).json({success: false, error: 'Acceso denegado.'})
             await validateUser.validatePartial(req.body)
@@ -216,10 +234,11 @@ export class UserController {
             const { email } = req.body
             const emailExists = await UserModel.verifyEmail({ email })
             if(!emailExists) return res.status(400).json({success: false, error: 'El correo no esta registrado.'})
-            const changePass_token = jwt.sign({ email }, jwtConfig.secret, { expiresIn: '5m' })
+            const changePass_token = jwtToken.generateToken({ payload: { email }, expiresIn: '5m' });
             res.cookie('changePass_token', changePass_token);
             return res.status(200).json({success: true, message: 'Correo verificado.'})
         } catch (error) {
+            console.log(error)
             return res.status(500).json({success: false, error: 'Error al verificar el correo.', detalle: error.message})
         }
     }
@@ -241,4 +260,56 @@ export class UserController {
         }
     }
 
+    static async patchDescription(req, res){
+        try {
+            const {id} = req.user;
+            const {description} = req.body;
+            const data = await UserModel.editDescription({newDescription: description, userId: id});
+
+            res.status(200).json({
+                ...data
+            })
+        } catch (error) {
+            res.status(400).json({success: false, error: error.message})
+        }
+    }
+
+    static async getInterestedIn(req, res){
+        try {
+            console.log('aqui')
+            let users;
+            console.log(req.user)
+            const {interestedIn, id} = req.user;
+            switch (interestedIn) {
+                case 'Mujer':
+                    users = await UserModel.getWomen({ userId: id });
+                    break;
+                case 'Hombre':
+                    users = await UserModel.getMen({ userId: id });
+                    break;
+                default:
+                    users = await UserModel.getBoth({ userId: id });
+                    break;
+            }
+            console.log(users)
+            return res.status(200).json({success: true, data: users});
+        } catch (error) {
+            console.log(error)
+            res.status(400).json({success: false, error: error.message})
+        }
+    }
+
+    static async likeUser(req, res){
+        try {
+            console.log(req.body)
+            const {id} = req.user;
+            const {matchId} = req.body;
+            const data = await UserModel.matchUser({userId: id, matchId});
+            res.status(200).json({
+                ...data
+            })
+        } catch (error) {
+            res.status(400).json({success: false, error: error.message})
+        }
+    }
 }

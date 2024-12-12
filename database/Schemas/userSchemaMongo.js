@@ -2,7 +2,15 @@ import { Schema } from 'mongoose';
 import { connectionToMongo } from '../connection.js';
 
 const userSchema = new Schema({
-    fullName: {
+    firstName: {
+        type: String,
+        required: true
+    },
+    lastName: {
+        type: String,
+        required: true,
+    },
+    username: {
         type: String,
         required: true
     },
@@ -14,7 +22,7 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    genre: {
+    gender : {
         type: String,
         required: true
     },
@@ -22,28 +30,29 @@ const userSchema = new Schema({
         type: Date,
         required: true
     },
-    biography: {
+    description: {
         type: String,
         required: true
     },
     profilePicture: {
-        type: String,
-        required: true
+        type: String
     },
-    genrePreference: {
+    interestedIn: {
         type: String,
         required: true
     },
     securityData: {
         question: {
             type: String,
-            required: true
         },
         answer: {
             type: String,
-            required: true
         }
-    }
+    },
+    Matches: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 })
 
 export const User = connectionToMongo.model('User', userSchema);

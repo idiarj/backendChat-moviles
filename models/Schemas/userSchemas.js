@@ -1,15 +1,32 @@
 import z from 'zod';
 
 export const userSchema = z.object({
-    fullName: z.string({
-        message: 'El nombre completo debe ser un string.',
+    firstName: z.string({
+        message: 'Elprimer debe ser un string.',
         required_error: 'El nombre completo es requerido.'
     }).min(3,{
-        message: 'El nombre completo debe tener al menos 5 caracteres.'
+        message: 'El nombre completo debe tener al menos 2 caracteres.'
     }).max(50,{
-        message: 'El nombre completo no puede tener mas de 50 caracteres.'
+        message: 'El nombre completo no puede tener mas de 10 caracteres.'
     }
     ),
+    lastName: z.string({
+        message: 'El apellido debe ser un string.',
+        required_error: 'El apellido es requerido.'
+    }).min(3,{
+        message: 'El apellido debe tener al menos 2 caracteres.'
+    }).max(50,{
+        message: 'El apellido no puede tener mas de 10 caracteres.'
+    }
+    ),
+    username: z.string({
+        message: 'El username debe ser un string.',
+        required_error: 'El username es requerido.'
+    }).min(3, {
+        message: 'El username debe tener al menos 3 caracteres.'
+    }).max(20, {
+        message: 'El username no puede tener mas de 20 caracteres.'
+    }),
     email: z.string({
         message: 'El email debe ser un string.',
         required_error: 'El email es requerido.'
@@ -24,7 +41,7 @@ export const userSchema = z.object({
     }).max(50, {
         message: 'La contraseña no puede tener mas de 50 caracteres.'
     }),
-    genre: z.enum(['Hombre', 'Mujer'], {
+    gender: z.enum(['Hombre', 'Mujer'], {
         message: 'El género debe ser "hombre" o "mujer".',
         required_error: 'El género es requerido.'
     }),
@@ -38,7 +55,7 @@ export const userSchema = z.object({
         message: 'La biografía no puede tener mas de 500 caracteres.'
     }),
     profilePicture: z.string(),
-    genrePreference: z.enum(['Hombre', 'Mujer', 'Ambos'], {
+    interestedIn: z.enum(['Hombre', 'Mujer', 'Ambos'], {
         message: 'La preferencia de género debe ser "Hombre", "Mujer" o "Ambos".',
         required_error: 'La preferencia de género es requerida.'
     }),

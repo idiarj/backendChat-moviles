@@ -13,7 +13,7 @@ export const changePasswordMiddleware = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         if (error.name === 'TokenExpiredError') {
-            res.clearCookie('validityToken'); // Elimina la cookie del token
+            res.clearCookie('validityToken');
             return res.status(401).json({ success: false, message: "Token expirado. Por favor, solicite un nuevo enlace de cambio de contraseña." });
         }
         res.status(401).json({ success: false, message: "Token inválido." });

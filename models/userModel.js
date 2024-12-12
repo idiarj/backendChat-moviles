@@ -2,13 +2,30 @@ import { User } from "../database/Schemas/userSchemaMongo.js";
 import { CryptManager } from "../utils/CryptManager.js";
 export class UserModel {
 
-    static async registerUser({ username, password, email }) {
+    static async registerUser({ username, password, email, firstName, lastName, gender, birthDate, description, profilePicture, interestedIn }) {
         try {
             password = await CryptManager.encriptarData({data: password});
+            console.log({
+                username,
+                password,
+                email,
+                firstName,
+                lastName,
+                birthDate,
+                description,
+                gender,
+                interestedIn
+            })
             const user = await User.create({
                 username,
                 password,
-                email
+                email,
+                firstName,
+                lastName,
+                gender,
+                birthDate,
+                description,
+                interestedIn
             });
             return user;
         } catch (error) {
@@ -64,7 +81,7 @@ export class UserModel {
 
     static async getUser({userId}){
         try {
-            const user = await User.findById(userId).select('-password');
+            const user = await User.findById(userId).select('-password  -securityData');
             return user;
         } catch (error) {
             
@@ -155,11 +172,118 @@ export class UserModel {
         }
     }
 
+    static async editDescription({newDescription, userId}){
+        try {
+            const oldDescription = await User.findById(userId).select('description');
+            const user = await User.findById(userId);
+            user.description = newDescription;
+            await user.save();
+            return {success: true, mensaje: 'Descripcion editada con exito.', oldDescription, newDescription}
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async deleteUser({userId}){
         try {
             await User.findByIdAndDelete(userId);
             return {success: true, mensaje: 'Usuario eliminado con exito.'}
         } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getWomen({ userId }) {
+        try {
+            const user = await User.findById(userId).select('Matches');
+            const likedUsers = user.Matches;
+    
+            const women = await User.find({
+                gender: 'Mujer',
+                _id: { $nin: [...likedUsers, userId] }
+            }).select('-password -securityData');
+    
+            return women;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getMen({ userId }) {
+        try {
+            const user = await User.findById(userId).select('Matches');
+            const likedUsers = user.Matches;
+    
+            const men = await User.find({
+                gender: 'Hombre',
+                _id: { $nin: [...likedUsers, userId] }
+            }).select('-password -securityData');
+    
+            return men;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getBoth({ userId }) {
+        try {
+            const user = await User.findById(userId).select('Matches');
+            const likedUsers = user.Matches;
+    
+            const both = await User.find({
+                _id: { $nin: [...likedUsers, userId] }
+            }).select('-password -securityData');
+    
+            return both;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async matchUser({userId, matchId}){
+        try{
+            console.log('userId',userId)
+            console.log('matchId',matchId)
+            const user = await User.findById(userId);
+            user.Matches.push(matchId);
+            await user.save();
+            return {success: true, mensaje: 'Match realizado con exito.'}
+        }catch(error){
+            throw error;    
+        }
+    }
+
+    static async setUpMatch({ userId, matchId }) {
+        try {
+            const user = await User.findById(userId);
+            const match = await User.findById(matchId);
+
+            if (user.Matches.includes(matchId) && match.Matches.includes(userId)) {
+                await this.notifyMatch({ userId, matchId });
+                
+                return { success: true, mensaje: '¡Hay match!' };
+            }
+
+            return { success: false, mensaje: 'No hay match' };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async notifyMatch({ userId, matchId }) {
+        try {
+            const user = await User.findById(userId);
+            const match = await User.findById(matchId);
+
+            // Aquí puedes agregar la lógica para notificar a ambos usuarios
+            // Por ejemplo, enviar un correo electrónico, una notificación push, etc.
+            console.log(`¡Hay match entre ${user.username} y ${match.username}!`);
+
+            // Ejemplo de notificación por correo electrónico (requiere configuración adicional)
+            // await EmailService.sendMatchNotification({ user, match });
+
+        } catch (error) {
+            console.error('Error al notificar el match:', error);
             throw error;
         }
     }
