@@ -201,7 +201,7 @@ export class UserModel {
             const women = await User.find({
                 gender: 'Mujer',
                 _id: { $nin: [...likedUsers, userId] }
-            }).select('-password -securityData');
+            }).select('-password -securityData -Matches');
     
             return women;
         } catch (error) {
@@ -217,7 +217,7 @@ export class UserModel {
             const men = await User.find({
                 gender: 'Hombre',
                 _id: { $nin: [...likedUsers, userId] }
-            }).select('-password -securityData');
+            }).select('-password -securityData -Matches');
     
             return men;
         } catch (error) {
@@ -232,7 +232,7 @@ export class UserModel {
     
             const both = await User.find({
                 _id: { $nin: [...likedUsers, userId] }
-            }).select('-password -securityData');
+            }).select('-password -securityData -Matches');
     
             return both;
         } catch (error) {
@@ -260,11 +260,10 @@ export class UserModel {
 
             if (user.Matches.includes(matchId) && match.Matches.includes(userId)) {
                 await this.notifyMatch({ userId, matchId });
-                
-                return { success: true, mensaje: '¡Hay match!' };
-            }
 
-            return { success: false, mensaje: 'No hay match' };
+                return { match: true, mensaje: '¡Hay match!' };
+            }
+            return { match: false, mensaje: 'No hay match' };
         } catch (error) {
             throw error;
         }

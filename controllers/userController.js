@@ -1,11 +1,13 @@
 import { UserModel } from '../models/userModel.js';
 import { Validation } from '../utils/validation.js';
 import { userSchema } from '../models/Schemas/userSchemas.js';
-import { ChatSchema } from "./Schemas/ChatSchema.js";
+import { ChatSchema } from "../models/Schemas/ChatSchema.js";
+import { ChatModel } from '../models/ChatModel.js';
 import { jwtToken } from '../utils/tokens.js';
+import { Chat } from '../database/Schemas/Chats.js';
 
 
-const validateMessage = Validation(ChatSchema);
+const validateMessage = new Validation(ChatSchema);
 const validateUser = new Validation(userSchema);
 
 export class UserController {
@@ -98,6 +100,7 @@ export class UserController {
             const token = req.cookies.access_token;
             if (!token) return res.status(400).json({ success: false, message: "No hay ninguna sesion iniciada." });
             res.clearCookie('access_token');
+            console.log('session cerrada')
             res.status(200).json({ success: true, message: "Sesion cerrada exitosamente." });
         } catch (error) {
             console.log(error)
@@ -305,8 +308,42 @@ export class UserController {
             const {id} = req.user;
             const {matchId} = req.body;
             const data = await UserModel.matchUser({userId: id, matchId});
+            const { match } = await UserModel.setUpMatch({userId: id, matchId});
+            if(match){
+                const chat = await ChatModel.createChat({id_user1: id, id_user2: matchId});
+                console.log(chat)
+            }
             res.status(200).json({
-                ...data
+                ...data,
+                match
+            })
+        } catch (error) {
+            res.status(400).json({success: false, error: error.message})
+        }
+    }
+
+    static async getMatches(req, res){
+        try {
+            const {id} = req.user;
+            const matches = await UserModel.getMatches({userId: id});
+            res.status(200).json({
+                success: true,
+                data: matches
+            })
+        } catch (error) {
+            res.status(400).json({success: false, error: error.message})
+        }
+    }   
+
+    static async getChats(req, res){
+        try {
+            console.log('a')
+            const {id} = req.user;
+            const chats = await ChatModel.getChats({id_user: id});
+            console.log(chats)
+            res.status(200).json({
+                success: true,
+                data: chats
             })
         } catch (error) {
             res.status(400).json({success: false, error: error.message})

@@ -13,17 +13,14 @@ const chatSchema = new Schema({
     },
     messages: [{
         message: {
-            type: String,
-            required: true
+            type: String
         },
         date: {
-            type: Date,
-            required: true
+            type: Date
         },
         sender: {
             type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
+            ref: 'User'
         }
     }]
 })
