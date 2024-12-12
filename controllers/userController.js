@@ -2,9 +2,8 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { UserModel } from '../../models/userModel.js';
+import { UserModel } from '../models/userModel.js';
 import { validateUser } from '../../instances/validation/iValidation.js';
-import { ComentaryModel } from '../../models/comentaryModel.js';
 // Obtener __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +13,7 @@ const jwtConfigPath = path.resolve(__dirname, '../../config/jwt-config.json');
 const jwtConfig = JSON.parse(fs.readFileSync(jwtConfigPath, 'utf-8'));
 
 export class UserController {
+
     static async registerUser(req, res) {
         try {
             console.log('lo que me esta lleando en el body:', req.body);
@@ -28,10 +28,6 @@ export class UserController {
             const { username, password, email } = req.body;
 
             await validateUser.validateTotal(req.body);
-            // const hashedPassword = await CryptManager.encriptarData({
-            //     data: password
-            // });
-            // console.log(hashedPassword);
 
             const user = await UserModel.registerUser({
                 username,
@@ -253,41 +249,4 @@ export class UserController {
         }
     }
 
-    static async addFilmToWatchList(req, res){
-        try {
-            console.log('entre a addFilmToWatchList controller')
-            const { id } = req.user;
-            const { filmId } = req.body;
-            const user = await UserModel.addFilmToWatchList({ id, filmId });
-            res.status(200).json({ success: true, data: user });
-        } catch (error) {
-            res.status(400).json({ success: false, message: error.message });
-        }
-    }
-
-    static async deleteFromWatchList(req, res){
-        try{
-            const { id } = req.user;
-            const { filmId } = req.body;
-            console.log(req.body)
-            console.log(req.user)
-            const user = await UserModel.deleteFromWatchlist({ userId: id, filmId });
-            res.status(200).json({ success: true, data: user })
-        }catch(error){
-            res.status(400).json({
-                success: false, message: error.message
-            })
-        }
-    }
-
-    static async getUserWatchList(req, res){
-        try {
-            const { id } = req.user;
-            const watchList = await UserModel.getUserWatchlist({ userId: id });
-            console.log(watchList);
-            res.status(200).json({ success: true, watchList });
-        } catch (error) {
-            res.status(400).json({ success: false, error: error.message });
-        }
-    }
 }
