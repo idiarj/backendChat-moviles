@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-
+import { ChatModel } from '../models/ChatModel.js';
 import { FsUtils } from "../utils/fsUtils.js";
 import { userRouter } from "../routers/dispatcher.js";
 const cors_config = await FsUtils.readJsonFile('./config/cors_config.json');
@@ -36,8 +36,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('sendMessage', async ({ roomId, message, senderId }) => {
-        const chat = await ChatModel.addMessage({ roomId, message, senderId });
-        io.to(roomId).emit('receiveMessage', chat);
+        console.log(`Received message: ${message} from sender: ${senderId} in room: ${roomId}`);
+        try {
+            const chat = await ChatModel.createMessage({ id_chat: roomId, message, id_user: senderId });
+            console.log(`Message saved: ${chat}`);
+            io.to(roomId).emit('receiveMessage', chat);
+        } catch (error) {
+            console.error('Error creating message:', error);
+        }
     });
 
     socket.on('disconnect', () => {

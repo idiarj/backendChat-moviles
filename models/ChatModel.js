@@ -40,4 +40,33 @@ export class ChatModel {
             throw error;
         }
     }
+
+    static async createMessage({id_chat, id_user, message}) {
+        try {
+            const chat = await Chat.findById(id_chat);
+            if (!chat) throw new Error('Chat not found');
+            console.log(message)
+            chat.messages.push({id_user, message, date: new Date()});
+            await chat.save();
+            return chat;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getMessages({ id_chat, activeUserId }) {
+        try {
+            const chat = await Chat.findById(id_chat);
+            if (!chat) throw new Error('Chat not found');
+    
+            const messagesWithSenderFlag = chat.messages.map(message => ({
+                ...message.toObject(),
+                isSender: message.sender.toString() === activeUserId
+            }));
+    
+            return messagesWithSenderFlag;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

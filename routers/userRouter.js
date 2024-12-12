@@ -19,6 +19,7 @@ userRouter.get('/getInterestedIn', authMiddleware, UserController.getInterestedI
 userRouter.get('/getSecurityQuestion', securityQuestionMiddleware, UserController.getSecurityQuestion);
 userRouter.get('/getMatches', authMiddleware, UserController.getMatches);
 userRouter.get('/getChats', authMiddleware, UserController.getChats);
+userRouter.get('/getMessages/:chatId', authMiddleware, UserController.getMessages);
 
 userRouter.put('/updateUser', authMiddleware, UserController.putUser);
 

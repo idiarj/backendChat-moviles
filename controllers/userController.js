@@ -366,4 +366,31 @@ export class UserController {
             res.status(400).json({success: false, error: error.message}) 
         }
     }
+
+    static async createMessage(req, res){
+        try {
+            const {id_chat, message} = req.body;
+            const {id} = req.user;
+            const chat = await ChatModel.createMessage({id_chat, id_user: id, message});
+            res.status(200).json({
+                ...chat
+            })
+        } catch (error) {
+            res.status(400).json({success: false, error: error.message})
+        }
+    }
+
+    static async getMessages(req, res){
+        try{
+            const {id_chat} = req.body;
+            const {id} = req.user;
+            const messages = await ChatModel.getMessages({id_chat, activeUserId: id});
+            res.status(200).json({
+                success: true,
+                data: messages
+            })
+        }catch(error){
+            res.status(400).json({success: false, error: error.message})    
+        }
+    }
 }
